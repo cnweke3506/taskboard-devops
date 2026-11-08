@@ -98,3 +98,5 @@ terraform destroy
 - Add alerting rules (error rate, latency) and a CD step that deploys automatically.
 
 See `docs/RUNBOOK.md` for troubleshooting and incident steps.
+
+Local dev environment: WSL2 Ubuntu + Docker Desktop (verified Nov 2026).
