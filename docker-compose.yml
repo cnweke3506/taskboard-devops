@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    image: taskboard:local
+    ports:
+      - "8000:8000"
+    volumes:
+      - taskdata:/data          # persistent storage survives container restarts
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin   # local demo only, change for anything real
+    depends_on:
+      - prometheus
+
+volumes:
+  taskdata:

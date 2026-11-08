@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskboard-config
+  namespace: taskboard
+data:
+  LOG_LEVEL: "INFO"
+  DB_PATH: "/data/tasks.db"

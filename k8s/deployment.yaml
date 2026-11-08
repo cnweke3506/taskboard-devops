@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskboard
+  namespace: taskboard
+  labels: { app: taskboard }
+spec:
+  replicas: 1          # SQLite on a ReadWriteOnce volume = one writer; scale out after moving to Postgres/RDS
+  selector:
+    matchLabels: { app: taskboard }
+  template:
+    metadata:
+      labels: { app: taskboard }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      containers:
+        - name: taskboard
+          image: ghcr.io/cnweke3506/taskboard:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: taskboard-config
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 256Mi }
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: taskboard-data
